@@ -81,6 +81,14 @@ namespace ADVCS
             new Timer(draw, null, rate, 0);
         }
 
+        static void nPx(byte x, byte y)
+        {
+            pt newp;
+            newp.x = x;
+            newp.y = y;
+            newPx.Add(newp);
+        }
+
         [MTAThread]
         static void Main(string[] args)
         {
@@ -127,12 +135,11 @@ namespace ADVCS
             Console.SetBufferSize(w+1, h+1);
             Console.SetWindowSize(w+1, h+1);
             Console.BackgroundColor = ConsoleColor.DarkGray;
-            Console.ForegroundColor = ConsoleColor.DarkGray;
             Console.Clear();
             objects[0].pos.y = 40;
             objects[0].col = ConsoleColor.Red;
             objects[0].spr = sprdragon;
-            pf(pfhallway, false, false);
+            pf(pfhallway, ConsoleColor.Magenta, false, false);
             //Console.OutputEncoding = Encoding.GetEncoding(437);
             draw(null);
             while (true)
@@ -183,7 +190,7 @@ namespace ADVCS
 
         static byte flip(byte i)
         {
-            int j = 0, k = 1;
+            int j = 0;//, k = 1;
             /*for (byte l = 0, m = 16; l < 4; l++)
             {
                 j |= (i & k) << (7 - (l * 2));
@@ -192,6 +199,7 @@ namespace ADVCS
                 m *= 2;
             }*/
             // absolutely wasteful, fix above later
+            // ^ fixed on my tower, didnt push b/c idot cant code
             j |= (i & 1) << 7;
             j |= (i & 2) << 5;
             j |= (i & 4) << 3;
@@ -220,10 +228,7 @@ namespace ADVCS
                 {
                     for (byte l = 0; l < w; l++)
                     {
-                        pt newp;
-                        newp.x = (byte)(x + l);
-                        newp.y = (byte)(y + k);
-                        newPx.Add(newp);
+                        nPx((byte)(x + l), (byte)(y + k));
                     }
                 }
 
@@ -240,10 +245,19 @@ namespace ADVCS
 
         static void frame()
         {
-            Console.BackgroundColor = ConsoleColor.DarkGray;
             for (ushort i = 0; i < newPx.Count; i++)
                 if (newPx[i].x >= 0 && newPx[i].x < 160 && newPx[i].y >= 0 && newPx[i].y < 96)
                 {
+                    pt temp = new pt();
+                    temp.x = newPx[i].x;
+                    temp.x = newPx[i].y;
+                    owPFPx.Add(temp);
+                    if (newPx[i].x == owPFPx.IndexOf(temp))
+                    {
+                        Console.BackgroundColor = pfcolor;
+                    }
+                    else
+                        Console.BackgroundColor = ConsoleColor.DarkGray;
                     Console.SetCursorPosition(newPx[i].x, newPx[i].y);
                     Console.Write('\0');
                 }
@@ -275,10 +289,7 @@ namespace ADVCS
                             {
                                 //Console.Write('\u2588');
                                 temp += '\0';
-                                pt newp;
-                                newp.x = (byte)(x + j);
-                                newp.y = (byte)(y + i);
-                                newPx.Add(newp);
+                                nPx((byte)(x + j), (byte)(y + i));
                             }
                             else
                             {
@@ -296,10 +307,11 @@ namespace ADVCS
 
         }
 
-        static void pf(byte[] field, bool dblW, bool mirror)
+        static void pf(byte[] field, ConsoleColor col, bool dblW, bool mirror)
         {
             Console.SetCursorPosition(0, 0);
             //seriously optimize this later
+            pfcolor = col;
             Console.BackgroundColor = pfcolor;
             byte m = 16, n, o, p;
             byte[] blocks = new byte[3];
@@ -323,6 +335,13 @@ namespace ADVCS
                         }
                         for (byte l = 0; l < p; l++)
                         {
+                            for (int q = 0; q < 8; q++)
+                            {
+                                pt temp = new pt();
+                                temp.x = (byte)(n + q);
+                                temp.x = o;
+                                owPFPx.Add(temp);
+                            }
                             Console.Write(new string('\0', m / 2));
                             try
                             {
